@@ -13,31 +13,38 @@ interface Step {
 // Contract address for sending rewards (you'll deploy this)
 const REWARD_CONTRACT_ADDRESS = '0x...'; // We'll create this contract later
 
-export const MetaMaskTutorial = ({ videoStream }: { videoStream: MediaStream | null }) => {
+export const MetaMaskTutorial = ({
+  videoStream,
+  onRequestScreenShare
+}: {
+  videoStream: MediaStream | null;
+  onRequestScreenShare: () => void;
+}) => {
   const [account, setAccount] = useState<string>('');
+  const [isStarted, setIsStarted] = useState(false);
   const [steps, setSteps] = useState<Step[]>([
     {
       id: 1,
       title: 'Install MetaMask',
-      description: 'First, install the MetaMask browser extension',
+      description: 'Install the MetaMask browser extension to get started with Web3',
       completed: false,
     },
     {
       id: 2,
       title: 'Create or Import Wallet',
-      description: 'Create a new wallet or import an existing one',
+      description: 'Set up your MetaMask wallet - we\'ll guide you through it',
       completed: false,
     },
     {
       id: 3,
       title: 'Connect to Base Sepolia',
-      description: 'Add and connect to Base Sepolia testnet',
+      description: 'Connect to the Base Sepolia testnet for testing',
       completed: false,
     },
     {
       id: 4,
       title: 'Get Test ETH',
-      description: 'Get some test ETH from the Base Sepolia faucet',
+      description: 'Get some test ETH to start experimenting',
       completed: false,
     }
   ]);
@@ -52,14 +59,12 @@ export const MetaMaskTutorial = ({ videoStream }: { videoStream: MediaStream | n
       const accounts = await provider.send("eth_requestAccounts", []);
       setAccount(accounts[0]);
 
-      // Switch to Base Sepolia
       try {
         await window.ethereum.request({
           method: 'wallet_switchEthereumChain',
-          params: [{ chainId: '0x14A34' }], // Base Sepolia chainId
+          params: [{ chainId: '0x14A34' }],
         });
       } catch (switchError: any) {
-        // Chain doesn't exist, add it
         if (switchError.code === 4902) {
           await window.ethereum.request({
             method: 'wallet_addEthereumChain',
@@ -78,7 +83,6 @@ export const MetaMaskTutorial = ({ videoStream }: { videoStream: MediaStream | n
         }
       }
 
-      // Mark step as completed
       setSteps(prevSteps =>
         prevSteps.map(step =>
           step.id === 2 ? { ...step, completed: true } : step
@@ -101,26 +105,22 @@ export const MetaMaskTutorial = ({ videoStream }: { videoStream: MediaStream | n
       const provider = new ethers.BrowserProvider(window.ethereum as any);
       const signer = await provider.getSigner();
 
-      // Check if we're on Base Sepolia
       const network = await provider.getNetwork();
       if (network.chainId !== BigInt(0x14A34)) {
         throw new Error('Please switch to Base Sepolia network');
       }
 
-      // Send a tiny amount of ETH as reward (0.00000001 ETH)
       const tx = await signer.sendTransaction({
         to: account,
         value: ethers.parseEther('0.00000001'),
-        gasLimit: 21000, // Standard gas limit for ETH transfers
+        gasLimit: 21000,
       });
 
       showNotification(`🎉 Task ${stepId} completed! Transaction sent: ${tx.hash}`);
 
-      // Wait for transaction confirmation
       const receipt = await tx.wait();
 
       if (receipt && receipt.status === 1) {
-        // Update step completion
         setSteps(prevSteps =>
           prevSteps.map(step =>
             step.id === stepId ? { ...step, completed: true } : step
@@ -142,7 +142,6 @@ export const MetaMaskTutorial = ({ videoStream }: { videoStream: MediaStream | n
     setTimeout(() => notification.remove(), 5000);
   };
 
-  // Check for MetaMask installation on component mount
   useEffect(() => {
     if (window.ethereum) {
       setSteps(prevSteps =>
@@ -153,30 +152,85 @@ export const MetaMaskTutorial = ({ videoStream }: { videoStream: MediaStream | n
     }
   }, []);
 
-  // Listen for account changes
   useEffect(() => {
-    if (window.ethereum) {
-      const handleAccountsChanged = (accounts: string[]) => {
-        setAccount(accounts[0] || '');
-      };
+    if (!window.ethereum) return;
 
-      window.ethereum.on('accountsChanged', handleAccountsChanged);
-      return () => {
-        window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
-      };
-    }
+    const handleAccountsChanged = (accounts: string[]) => {
+      setAccount(accounts[0] || '');
+    };
+
+    const ethereum = window.ethereum;
+    (ethereum as any).on('accountsChanged', handleAccountsChanged);
+
+    return () => {
+      if (ethereum.removeListener) {
+        ethereum.removeListener('accountsChanged', handleAccountsChanged);
+      }
+    };
   }, []);
 
-  return (
-    <div className="metamask-tutorial">
-      <div className="tutorial-header">
-        <h1>Welcome to Crypto Journey</h1>
-        <div className="ai-assistant">
-          <div className="hologram-effect"></div>
+  if (!isStarted) {
+    return (
+      <div className="landing-page">
+        <div className="content">
+          <h1>Welcome to CryptoGuide</h1>
+          <p className="subtitle">Your interactive journey into Web3</p>
+          <div className="features">
+            <div className="feature">
+              <span className="icon">🦊</span>
+              <p>Learn MetaMask</p>
+            </div>
+            <div className="feature">
+              <span className="icon">🎓</span>
+              <p>Step-by-step guidance</p>
+            </div>
+            <div className="feature">
+              <span className="icon">🎁</span>
+              <p>Earn rewards</p>
+            </div>
+          </div>
+          <button
+            className="start-button"
+            onClick={() => {
+              setIsStarted(true);
+              onRequestScreenShare();
+            }}
+          >
+            Start Your Journey
+          </button>
         </div>
       </div>
+    );
+  }
 
-      <div className="tutorial-content">
+  return (
+    <div className="tutorial-container">
+      <div className="main-content">
+        {videoStream ? (
+          <div className="screen-preview">
+            <h2>Your Screen</h2>
+            <div className="video-container">
+              <video
+                autoPlay
+                playsInline
+                muted
+                ref={(video) => {
+                  if (video && videoStream) {
+                    video.srcObject = videoStream;
+                  }
+                }}
+              />
+            </div>
+          </div>
+        ) : (
+          <div className="screen-prompt">
+            <p>Please share your screen to continue</p>
+            <button onClick={onRequestScreenShare}>Share Screen</button>
+          </div>
+        )}
+      </div>
+
+      <div className="steps-panel">
         <div className="steps-container">
           {steps.map((step) => (
             <div
@@ -191,12 +245,12 @@ export const MetaMaskTutorial = ({ videoStream }: { videoStream: MediaStream | n
               {!step.completed && (
                 <>
                   {step.id === 2 && !account && (
-                    <button onClick={connectWallet} className="connect-button">
+                    <button onClick={connectWallet} className="action-button">
                       Connect Wallet
                     </button>
                   )}
                   {step.id === 4 && account && (
-                    <button onClick={() => sendReward(step.id)} className="connect-button">
+                    <button onClick={() => sendReward(step.id)} className="action-button">
                       Claim Reward
                     </button>
                   )}
@@ -204,15 +258,6 @@ export const MetaMaskTutorial = ({ videoStream }: { videoStream: MediaStream | n
               )}
             </div>
           ))}
-        </div>
-
-        <div className="video-container">
-          {videoStream && (
-            <div className="screen-share-preview">
-              <h3>Screen Share Preview</h3>
-              {/* Video preview is handled by the parent component */}
-            </div>
-          )}
         </div>
       </div>
     </div>

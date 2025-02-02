@@ -1,3 +1,30 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: #000000;
+  color: #ffffff;
+}
+
+.App {
+  min-height: 100vh;
+  width: 100%;
+}
+
+.stream {
+  display: none;
+
+  &.hidden {
+    display: none;
+  }
+}
+
 :root {
   --text: white;
   --gray-200: #b4b8bb;

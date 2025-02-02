@@ -37,6 +37,23 @@ function App() {
   // either the screen capture, the video or null, if null we hide it
   const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
 
+  const handleScreenShare = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getDisplayMedia({
+        video: true,
+        audio: false,
+      });
+      setVideoStream(stream);
+
+      // Handle stream ending
+      stream.getVideoTracks()[0].onended = () => {
+        setVideoStream(null);
+      };
+    } catch (error) {
+      console.error('Error sharing screen:', error);
+    }
+  };
+
   return (
     <div className="App">
       <LiveAPIProvider url={uri} apiKey={API_KEY}>
@@ -44,7 +61,10 @@ function App() {
           <SidePanel />
           <main>
             <div className="main-app-area">
-              <MetaMaskTutorial videoStream={videoStream} />
+              <MetaMaskTutorial
+                videoStream={videoStream}
+                onRequestScreenShare={handleScreenShare}
+              />
               <video
                 className={cn("stream", {
                   hidden: !videoRef.current || !videoStream,
