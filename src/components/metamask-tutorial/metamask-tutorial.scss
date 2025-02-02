@@ -295,6 +295,8 @@
       border-bottom: 1px solid var(--border);
       overflow: hidden;
       position: relative;
+      contain: content;
+      isolation: isolate;
 
       video {
         width: 100%;
@@ -536,14 +538,45 @@
       }
 
       ol {
-        list-style-type: decimal;
-        padding-left: 1.5rem;
-        color: var(--text-secondary);
+        list-style: none;
+        padding-left: 0;
+        counter-reset: step-counter;
 
         li {
-          margin: 0.75rem 0;
-          line-height: 1.5;
-          font-size: 1rem;
+          position: relative;
+          margin: 1.5rem 0;
+          padding-left: 3rem;
+          line-height: 1.6;
+          font-size: 1.1rem;
+          color: var(--text-secondary);
+
+          &::before {
+            counter-increment: step-counter;
+            content: counter(step-counter);
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 2rem;
+            height: 2rem;
+            background: var(--surface);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+          }
+
+          &.step-primary {
+            color: var(--primary);
+            font-weight: bold;
+
+            &::before {
+              background: var(--primary);
+              color: var(--text);
+            }
+          }
         }
       }
     }
@@ -627,5 +660,31 @@
 
   &.completed {
     background: rgba(34, 197, 94, 0.05) !important;
+  }
+}
+
+// Add these styles to fix the video flickering
+.video-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  isolation: isolate;
+  contain: content;
+
+  video {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    will-change: transform; // Helps with performance
+    transform: translate3d(0,0,0);
+    backface-visibility: hidden;
+    -webkit-transform-style: preserve-3d;
+    transform-style: preserve-3d;
+    filter: blur(0);
   }
 }

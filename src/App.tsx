@@ -20,7 +20,7 @@ import { LiveAPIProvider } from "./contexts/LiveAPIContext";
 import SidePanel from "./components/side-panel/SidePanel";
 import ControlTray from "./components/control-tray/ControlTray";
 import cn from "classnames";
-import MetaMaskTutorial from "./components/metamask-tutorial/MetaMaskTutorial";
+import { MetaMaskTutorial } from "./components/metamask-tutorial/MetaMaskTutorial";
 
 const API_KEY = process.env.REACT_APP_GEMINI_API_KEY as string;
 if (typeof API_KEY !== "string") {
@@ -63,7 +63,6 @@ function App() {
             <div className="main-app-area">
               <MetaMaskTutorial
                 videoStream={videoStream}
-                onRequestScreenShare={handleScreenShare}
               />
               <video
                 className={cn("stream", {
