@@ -1,126 +1,73 @@
-# Multimodal Live API - Web console
+# Un-Normie-inator
 
-This repository contains a react-based starter app for using the [Multimodal Live API](<[https://ai.google.dev/gemini-api](https://ai.google.dev/api/multimodal-live)>) over a websocket. It provides modules for streaming audio playback, recording user media such as from a microphone, webcam or screen capture as well as a unified log view to aid in development of your application.
+Welcome to **Un-Normie-inator** (Doofenshmirtz moment), a React-based interactive tutorial that guides beginners through setting up their first crypto wallet using MetaMask. Learn, practice, and earn test ETH in a safe, step-by-step environment!
 
-[![Multimodal Live API Demo](readme/thumbnail.png)](https://www.youtube.com/watch?v=J_q7JY1XxFE)
+<div>
+    <a href="https://www.loom.com/share/3bed507945a84b3d82a554dd6499765d">
+      <p>Un-Normie-inator - Watch Video</p>
+    </a>
+    <a href="https://www.loom.com/share/3bed507945a84b3d82a554dd6499765d">
+      <img style="max-width:300px;" src="https://cdn.loom.com/sessions/thumbnails/3bed507945a84b3d82a554dd6499765d-aec075d46460dd48-full-play.gif">
+    </a>
+  </div>
 
-Watch the demo of the Multimodal Live API [here](https://www.youtube.com/watch?v=J_q7JY1XxFE).
+## Overview
+
+UnNormify leverages live screen sharing and real-time messaging to provide an engaging and comprehensive MetaMask setup experience. The tutorial walks the user through key steps—installing MetaMask, creating a secure wallet, connecting to a test network, and claiming practice ETH—using clear instructions and actionable prompts.
+
+Features include:
+
+- **Interactive Tutorial:** Real-time guidance using step-based instructions ([MetaMaskTutorial.tsx](src/components/metamask-tutorial/MetaMaskTutorial.tsx)).
+- **Live API Integration:** Utilizes the [LiveAPIContext](src/contexts/LiveAPIContext.tsx) for dynamic messaging and tool calls.
+- **Responsive UI:** Styled with SCSS and subtle animations ([metamask-tutorial.scss](src/components/metamask-tutorial/metamask-tutorial.scss)) for an engaging user experience.
+- **Blockchain Education:** Designed for crypto beginners to safely learn about wallets and test networks.
+
+## Installation
+
+To get started, clone the repository and install the dependencies:
+
+```sh
+npm install
+```
+
+Then run the application in development mode:
+
+```sh
+npm start
+```
+
+Open [http://localhost:3000](http://localhost:3000) in your browser to view the app.
+
+## Project Structure
+
+- **public/**
+  Files such as `index.html` and `robots.txt` for static assets.
+
+- **src/**
+  - `App.tsx`: Main application component.
+  - `App.scss`: Global styles.
+  - **components/**
+    - **metamask-tutorial/**
+      - `MetaMaskTutorial.tsx`: Contains the MetaMask tutorial components.
+      - `metamask-tutorial.scss`: Styles for the tutorial.
+    - Other UI components (e.g., logger, side-panel).
+  - **contexts/**
+    - `LiveAPIContext.tsx`: Provides live API functions used in the tutorial.
+  - **hooks/**
+    - `use-live-api.ts`: Custom hook to interact with the live API.
 
 ## Usage
 
-To get started, [create a free Gemini API key](https://aistudio.google.com/apikey) and add it to the `.env` file. Then:
+Un-Normie-inator is intended for developers and educators looking to enhance Web3 onboarding:
 
-```
-$ npm install && npm start
-```
+- **Beginners:** Offers a clear, guided walkthrough of MetaMask installation and initial setup.
+- **Developers:** Use the project as a reference for integrating live API services into Web3 applications.
+- **Educators:** Demonstrates a live, interactive teaching method to simplify blockchain concepts.
 
-We have provided several example applications on other branches of this repository:
+## Contributing
 
-- [demos/GenExplainer](https://github.com/google-gemini/multimodal-live-api-web-console/tree/demos/genexplainer)
-- [demos/GenWeather](https://github.com/google-gemini/multimodal-live-api-web-console/tree/demos/genweather)
-- [demos/GenList](https://github.com/google-gemini/multimodal-live-api-web-console/tree/demos/genlist)
+Contributions are welcome! Please review our `CONTRIBUTING.md` for guidelines on how to get started.
 
-## Example
+## License
 
-Below is an example of an entire application that will use Google Search grounding and then render graphs using [vega-embed](https://github.com/vega/vega-embed):
-
-```typescript
-import { type FunctionDeclaration, SchemaType } from "@google/generative-ai";
-import { useEffect, useRef, useState, memo } from "react";
-import vegaEmbed from "vega-embed";
-import { useLiveAPIContext } from "../../contexts/LiveAPIContext";
-
-export const declaration: FunctionDeclaration = {
-  name: "render_altair",
-  description: "Displays an altair graph in json format.",
-  parameters: {
-    type: SchemaType.OBJECT,
-    properties: {
-      json_graph: {
-        type: SchemaType.STRING,
-        description:
-          "JSON STRING representation of the graph to render. Must be a string, not a json object",
-      },
-    },
-    required: ["json_graph"],
-  },
-};
-
-export function Altair() {
-  const [jsonString, setJSONString] = useState<string>("");
-  const { client, setConfig } = useLiveAPIContext();
-
-  useEffect(() => {
-    setConfig({
-      model: "models/gemini-2.0-flash-exp",
-      systemInstruction: {
-        parts: [
-          {
-            text: 'You are my helpful assistant. Any time I ask you for a graph call the "render_altair" function I have provided you. Dont ask for additional information just make your best judgement.',
-          },
-        ],
-      },
-      tools: [{ googleSearch: {} }, { functionDeclarations: [declaration] }],
-    });
-  }, [setConfig]);
-
-  useEffect(() => {
-    const onToolCall = (toolCall: ToolCall) => {
-      console.log(`got toolcall`, toolCall);
-      const fc = toolCall.functionCalls.find(
-        (fc) => fc.name === declaration.name
-      );
-      if (fc) {
-        const str = (fc.args as any).json_graph;
-        setJSONString(str);
-      }
-    };
-    client.on("toolcall", onToolCall);
-    return () => {
-      client.off("toolcall", onToolCall);
-    };
-  }, [client]);
-
-  const embedRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (embedRef.current && jsonString) {
-      vegaEmbed(embedRef.current, JSON.parse(jsonString));
-    }
-  }, [embedRef, jsonString]);
-  return <div className="vega-embed" ref={embedRef} />;
-}
-```
-
-## development
-
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
-Project consists of:
-
-- an Event-emitting websocket-client to ease communication between the websocket and the front-end
-- communication layer for processing audio in and out
-- a boilerplate view for starting to build your apps and view logs
-
-## Available Scripts
-
-In the project directory, you can run:
-
-### `npm start`
-
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
-
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-_This is an experiment showcasing the Multimodal Live API, not an official Google product. We’ll do our best to support and maintain this experiment but your mileage may vary. We encourage open sourcing projects as a way of learning from each other. Please respect our and other creators' rights, including copyright and trademark rights when present, when sharing these works and creating derivative work. If you want more info on Google's policy, you can find that [here](https://developers.google.com/terms/site-policies)._
+This project is licensed under the Apache License 2.0. See the LICENSE file for details.

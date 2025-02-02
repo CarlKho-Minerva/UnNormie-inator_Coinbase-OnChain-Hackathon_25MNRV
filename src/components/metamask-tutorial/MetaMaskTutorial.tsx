@@ -112,12 +112,14 @@ const INTRO_SEQUENCE = [
   },
   {
     id: "control-panel",
-    content: "Before we start, you'll need to share your screen. Let me show you how:",
+    content:
+      "Before we start, you'll need to share your screen. Let me show you how:",
     delay: 3000,
   },
   {
     id: "control-instructions",
-    content: "Look at the control panel below - you'll see a Play button and a Share Screen button. Click them in that order to begin!",
+    content:
+      "Look at the control panel below - you'll see a Play button and a Share Screen button. Click them in that order to begin!",
     delay: 2000,
   },
 ];
@@ -186,9 +188,7 @@ interface MetaMaskTutorialProps {
   videoStream: MediaStream | null;
 }
 
-const MetaMaskTutorialComponent = ({
-  videoStream,
-}: MetaMaskTutorialProps) => {
+const MetaMaskTutorialComponent = ({ videoStream }: MetaMaskTutorialProps) => {
   const [account, setAccount] = useState<string>("");
   const [isStarted, setIsStarted] = useState(false);
   const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES);
@@ -275,7 +275,7 @@ const MetaMaskTutorialComponent = ({
             audioConfig: {
               audioEncoding: "MP3",
               speakingRate: 1.3, // Speed up the speech
-              pitch: 1.2 // Slightly higher pitch to maintain clarity
+              pitch: 1.2, // Slightly higher pitch to maintain clarity
             },
           }),
         }
@@ -605,11 +605,11 @@ const MetaMaskTutorialComponent = ({
                   }
                 }}
                 style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'contain',
-                  backfaceVisibility: 'hidden',
-                  transform: 'translate3d(0,0,0)'
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "contain",
+                  backfaceVisibility: "hidden",
+                  transform: "translate3d(0,0,0)",
                 }}
               />
             </div>
@@ -617,13 +617,22 @@ const MetaMaskTutorialComponent = ({
             <div className="screen-share-prompt">
               <div className="prompt-content">
                 <h2>Let's Get Started!</h2>
-                <p>I'll need to see your screen to guide you through the tutorial.</p>
+                <p>
+                  I'll need to see your screen to guide you through the
+                  tutorial.
+                </p>
                 <div className="instructions">
                   <p>Complete these steps to begin:</p>
                   <ol>
-                    <li className="step-primary">1. Find the control panel at the bottom ⬇️</li>
-                    <li className="step-primary">2. Click the Play button ▶️</li>
-                    <li className="step-primary">3. Click the Share Screen button 🖥️</li>
+                    <li className="step-primary">
+                      1. Find the control panel at the bottom ⬇️
+                    </li>
+                    <li className="step-primary">
+                      2. Click the Play button ▶️
+                    </li>
+                    <li className="step-primary">
+                      3. Click the Share Screen button 🖥️
+                    </li>
                     <li>4. Choose your browser window</li>
                     <li>5. Uncheck "Share audio"</li>
                     <li>6. Click "Share" to start</li>
