@@ -18,9 +18,9 @@ import { useRef, useState } from "react";
 import "./App.scss";
 import { LiveAPIProvider } from "./contexts/LiveAPIContext";
 import SidePanel from "./components/side-panel/SidePanel";
-import { Altair } from "./components/altair/Altair";
 import ControlTray from "./components/control-tray/ControlTray";
 import cn from "classnames";
+import MetaMaskTutorial from "./components/metamask-tutorial/MetaMaskTutorial";
 
 const API_KEY = process.env.REACT_APP_GEMINI_API_KEY as string;
 if (typeof API_KEY !== "string") {
@@ -44,8 +44,7 @@ function App() {
           <SidePanel />
           <main>
             <div className="main-app-area">
-              {/* APP goes here */}
-              <Altair />
+              <MetaMaskTutorial videoStream={videoStream} />
               <video
                 className={cn("stream", {
                   hidden: !videoRef.current || !videoStream,
